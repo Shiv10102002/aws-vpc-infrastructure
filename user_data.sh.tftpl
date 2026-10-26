@@ -1,0 +1,31 @@
+#!/bin/bash
+# Artifact version: ${jar_hash}
+set -euxo pipefail
+
+dnf install -y java-21-amazon-corretto-headless
+
+useradd --system --home-dir /opt/${app_name} --shell /sbin/nologin ${app_name} || true
+mkdir -p /opt/${app_name}
+
+aws s3 cp "s3://${bucket}/${jar_key}" /opt/${app_name}/app.jar --region ${region}
+chown -R ${app_name}:${app_name} /opt/${app_name}
+
+cat > /etc/systemd/system/${app_name}.service <<'EOF'
+[Unit]
+Description=${app_name} Spring Boot application
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=${app_name}
+WorkingDirectory=/opt/${app_name}
+ExecStart=/usr/bin/java -jar /opt/${app_name}/app.jar
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable --now ${app_name}

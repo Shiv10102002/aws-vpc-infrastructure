@@ -1,0 +1,21 @@
+crash.log
+
+# Terraform state and plan files
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfplan
+**/tfplan
+
+# Terraform working directories
+**/.terraform/
+
+# Terraform variable files containing secrets
+*.tfvars
+*.tfvars.json
+
+# AWS credentials
+.aws/
+.aws-credentials
+
+# Generated AWS inventory output
+/aws-inventory-shiv/
